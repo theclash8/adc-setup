@@ -52,7 +52,7 @@ services:
         - mariadb-wordpress
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_URL}`) || Host(`www.${$WORDPRESS_URL}`)"
+      - "traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_URL}`) || Host(`www.${WORDPRESS_URL}`)"
       - "traefik.http.routers.wordpress.entrypoints=web"
 
   mariadb-wordpress:
