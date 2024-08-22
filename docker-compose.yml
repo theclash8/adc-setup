@@ -39,6 +39,7 @@ services:
       MYSQL_PASSWORD: ${MARIADB_MAGENTO_PASSWORD}
     volumes:
       - ${MARIADB_MAGENTO_DATA_DIR-./mysql/mariadb-magento}:/var/lib/mysql:rw
+      - ${MARIADB_MAGENTO_INITDB-./entrypoint-initdb/magento}:/docker-entrypoint-initdb.d/:ro
 
   wordpress:
     image: ${WORDPRESS_IMAGE}
@@ -65,6 +66,7 @@ services:
       MYSQL_PASSWORD: ${MARIADB_WORDPRESS_PASSWORD}
     volumes:
       - ${MARIADB_WORDPRESS_DATA_DIR-./mariadb-wordpress}:/var/lib/mysql:rw
+      - ${MARIADB_WORDPRESS_INITDB-./entrypoint-initdb/wordpress}:/docker-entrypoint-initdb.d/:ro
 
   moodle:
     image: ${MOODLE_IMAGE}
@@ -98,3 +100,4 @@ services:
       MARIADB_COLLATE: utf8mb4_unicode_ci
     volumes:
       - ${MARIADB_MOODLE_DATA_DIR-./mariadb-moodle}:/var/lib/mysql:rw
+      - ${MARIADB_MOODLE_INITDB-./entrypoint-initdb/moodle}:/docker-entrypoint-initdb.d/:ro
