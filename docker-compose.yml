@@ -17,8 +17,8 @@ services:
   magento:
     image: ${MAGENTO_IMAGE}
     container_name: magento
-    #volumes:
-      #-  ${MAGENTO_DOCUMENT_ROOT-./www}:/var/www/html:rw
+    volumes:
+      -  ${MAGENTO_DOCUMENT_ROOT-./www}:/var/www/html:rw
     restart: unless-stopped
     depends_on:
       - traefik
@@ -44,14 +44,14 @@ services:
     image: ${WORDPRESS_IMAGE}
     container_name: wordpress
     restart: unless-stopped
-    #volumes:
-      #- ${WORDPRESS_DIR-./wordpress/}:/var/www/html
+    volumes:
+      - ${WORDPRESS_DOCUMENT_ROOT-./wordpress/}:/var/www/html
     depends_on:
         - traefik
         - mariadb-wordpress
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_URL}`)"
+      - "traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_URL}`) || Host(`www.${$WORDPRESS_URL}`)"
       - "traefik.http.routers.wordpress.entrypoints=web"
 
   mariadb-wordpress:
