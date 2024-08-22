@@ -25,7 +25,7 @@ services:
       - mariadb-magento
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.magento.rule=Host(`${MAGENTO_URL_1}`) || Host(`${$MAGENTO_URL_2}`)"
+      - "traefik.http.routers.magento.rule=Host(`${MAGENTO_URL_1}`) || Host(`${MAGENTO_URL_2}`)"
       - "traefik.http.routers.magento.entrypoints=web"
 
   mariadb-magento:
