@@ -1,0 +1,100 @@
+services:
+
+  traefik:
+    image: "traefik:v3.1"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  magento:
+    image: ${MAGENTO_IMAGE}
+    container_name: magento
+    #volumes:
+      #-  ${MAGENTO_DOCUMENT_ROOT-./www}:/var/www/html:rw
+    restart: unless-stopped
+    depends_on:
+      - traefik
+      - mariadb-magento
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.magento.rule=Host(`${MAGENTO_URL_1}`) || Host(`${$MAGENTO_URL_2}`)"
+      - "traefik.http.routers.magento.entrypoints=web"
+
+  mariadb-magento:
+    image: ${MARIADB_MAGENTO_IMAGE}
+    container_name: mariadb-magento
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_MAGENTO_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_MAGENTO_DATABASE}
+      MYSQL_USER: ${MARIADB_MAGENTO_USER}
+      MYSQL_PASSWORD: ${MARIADB_MAGENTO_PASSWORD}
+    volumes:
+      - ${MARIADB_MAGENTO_DATA_DIR-./mysql/mariadb-magento}:/var/lib/mysql:rw
+
+  wordpress:
+    image: ${WORDPRESS_IMAGE}
+    container_name: wordpress
+    restart: unless-stopped
+    #volumes:
+      #- ${WORDPRESS_DIR-./wordpress/}:/var/www/html
+    depends_on:
+        - traefik
+        - mariadb-wordpress
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_URL}`)"
+      - "traefik.http.routers.wordpress.entrypoints=web"
+
+  mariadb-wordpress:
+    image: ${MARIADB_WORDPRESS_IMAGE}
+    container_name: mariadb-magento
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_WORDPRESS_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_WORDPRESS_DATABASE}
+      MYSQL_USER: ${MARIADB_WORDPRESS_USER}
+      MYSQL_PASSWORD: ${MARIADB_WORDPRESS_PASSWORD}
+    volumes:
+      - ${MARIADB_WORDPRESS_DATA_DIR-./mariadb-wordpress}:/var/lib/mysql:rw
+
+  moodle:
+    image: ${MOODLE_IMAGE}
+    container_name: moodle
+    environment:
+      - BITNAMI_DEBUG=true
+      - MOODLE_SKIP_BOOTSTRAP=true
+      - MOODLE_DATABASE_HOST=${MARIADB_MOODLE_HOST}
+      - MOODLE_DATABASE_USER=${MARIADB_MOODLE_USER}
+      - MOODLE_DATABASE_NAME=${MARIADB_MOODLE_DATABASE}
+      - MOODLE_DATABASE_PASSWORD=${MARIADB_MOODLE_PASSWORD}
+    #volumes:
+      #- ${MOODLE_ROOT_DIR-./moodle/root}:/bitnami/moodle:rw
+      #- ${MOODLE_DATA_DIR-./moodle/moodledata}:/bitnami/moodledata:rw
+    depends_on:
+      - traefik
+      - mariadb-moodle
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moodle.rule=Host(`${MOODLE_URL}`)"
+      - "traefik.http.routers.moodle.entrypoints=web"
+
+  mariadb-moodle:
+    image: mariadb:11.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_MOODLE_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_MOODLE_DATABASE}
+      MYSQL_USER: ${MARIADB_MOODLE_USER}
+      MYSQL_PASSWORD: ${MARIADB_MOODLE_PASSWORD}
+      MARIADB_CHARACTER_SET: utf8mb4
+      MARIADB_COLLATE: utf8mb4_unicode_ci
+    volumes:
+      - ${MARIADB_MOODLE_DATA_DIR-./mariadb-moodle}:/var/lib/mysql:rw
